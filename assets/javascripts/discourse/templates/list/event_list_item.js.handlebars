@@ -13,11 +13,12 @@
 --}}
 
 <td class='event-list-item clearfix' {{bind-attr colspan="titleColSpan"}}>
-  {{#if image_url}}
-    <div class='event-image'>
+
+  <div class='event-image'>
+    {{#if image_url}}
       <img src="{{image_url}}">
-    </div>
-  {{/if}}
+    {{/if}}
+  </div>
 
   <div class='event-info'>
     {{topicStatus topic=this}}
