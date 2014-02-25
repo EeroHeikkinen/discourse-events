@@ -32,6 +32,9 @@
     {{#if unseen}}
       <a href="{{lastUnreadUrl}}" class='badge new-posts badge-notification' title='{{i18n topic.new}}'><i class='fa fa-asterisk'></i></a>
     {{/if}}
+    {{#if event-place}}
+      <span class="event-place">{{event-place}}</span>
+    {{/if}}
 
     {{#if excerptNotEmpty}}
       <div class="topic-excerpt">

@@ -11,6 +11,11 @@
 	height: 150px;
 }
 
+.event-place {
+	float: right;
+	color: #CCC;
+}
+
 #topic-list.event-list {
 	border: 1px solid #ddd;
 }

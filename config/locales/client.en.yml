@@ -8,11 +8,4 @@ en:
     event:
       title: 'Event'
       date: 'Date'
-    dates:
-      tiny: 
-        past: "Past"
-
-  event:
-    title: 'Event'
-    date: 'Date'
-  title: 'Event'
+    past_events: 'Past events'

@@ -18,7 +18,7 @@
       var now = new Date();
       var grouped = _.groupBy(topics, function(e) {
         if(new Date(e.event_time) < now)
-          return "past";
+          return I18n.t("past_events");
         return Discourse.Formatter.shortDate(e.event_time);
       });
 
