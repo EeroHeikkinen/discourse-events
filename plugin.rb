@@ -40,12 +40,34 @@ after_initialize do
         object.meta_data["event_time"]
       end
 
+      def include_event_time
+        if object.meta_data and object.meta_data["event_time"]
+          return true
+        end
+        return false
+      end
+
       def event_place
+        if 
         object.meta_data["event_place"]
+      end
+
+      def include_event_place
+        if object.meta_data and object.meta_data["event_place"]
+          return true
+        end
+        return false
       end
 
       def calendar_event_id
         object.meta_data["calendar_event_id"]
+      end
+
+      def include_calendar_event_id
+        if object.meta_data and object.meta_data["include_calendar_event_id"]
+          return true
+        end
+        return false
       end
 
       def include_excerpt?
