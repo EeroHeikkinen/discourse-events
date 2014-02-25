@@ -1,0 +1,18 @@
+en:
+  admin_js:
+    admin:
+      site_settings:
+        categories:
+          events: 'Events'
+  js:
+    event:
+      title: 'Event'
+      date: 'Date'
+    dates:
+      tiny: 
+        past: "Past"
+
+  event:
+    title: 'Event'
+    date: 'Date'
+  title: 'Event'
