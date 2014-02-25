@@ -51,7 +51,7 @@
       opts.canEditCategory = Discourse.User.currentProp('staff');
       this.controllerFor('navigationCategory').setProperties(opts);
 
-      return Discourse.TopicList.list("category/" + Discourse.SiteSettings.event_category + "/l/events").then(function(list) {
+      return Discourse.TopicList.list("category/" + Discourse.SiteSettings.events_category + "/l/events").then(function(list) {
         var tracking = Discourse.TopicTrackingState.current();
         if (tracking) {
           tracking.sync(list, listFilter);
