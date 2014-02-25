@@ -48,7 +48,6 @@ after_initialize do
       end
 
       def event_place
-        if 
         object.meta_data["event_place"]
       end
 
