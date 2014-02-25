@@ -46,7 +46,7 @@
 }
 
 #events-calendar:after {
-	content: url('/plugins/events/images/pikkunalle.png');
+	content: url('/plugins/discourse-events/images/pikkunalle.png');
 	position: absolute;
 	left: -43px;
 	top: -69px;
