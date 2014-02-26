@@ -41,7 +41,7 @@ after_initialize do
           .joins(:category)
           .where("categories.slug = '#{params[:category]}'" +
           " AND topics.title not like 'Category definition%'")
-          .order("meta_data->'event_time' ASC")
+          .order("meta_data->'event_date' ASC")
         list = TopicList.new(:latest, current_user, t)   
         render_serialized(list, TopicListSerializer)
       end
