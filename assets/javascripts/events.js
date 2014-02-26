@@ -34,7 +34,7 @@
   Discourse.EventsRoute = Discourse.Route.extend({
     model: function(params) {
       PreloadStore.remove("topic_list");
-      return Discourse.Category.findBySlug("uncategorized");
+      return Discourse.Category.findBySlug(Discourse.SiteSettings.events_category);
     },
 
     afterModel: function(model) {
@@ -71,7 +71,7 @@
           period = filter.indexOf('/') > 0 ? filter.split('/')[1] : '',
           filterText = I18n.t('filters.' + filter.replace('/', '.') + '.title', {count: 0});
 
-      Discourse.set('title', I18n.t('filters.with_category', { filter: filterText, category: model.get('name').capitalize() }));
+      Discourse.set('title', I18n.t('upcoming_events'));
 
       this.controllerFor('navigationCategory').set('canCreateTopic', topics.get('can_create_topic'));
       this.controllerFor('discoveryEvents').setProperties({
@@ -86,7 +86,7 @@
 
     renderTemplate: function() {
       this.render('events', { controller: 'discovery'} );
-      this.render('navigation/category', { into: 'events', outlet: 'navigation-bar' });
+      this.render('navigation/category', { controller: 'navigationCategory', into: 'events', outlet: 'navigation-bar' });
       this.render('discovery/events', { into: 'events', controller: 'discoveryEvents', outlet: 'list-container' });
     },
 
