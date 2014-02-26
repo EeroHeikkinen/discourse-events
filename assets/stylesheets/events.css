@@ -11,9 +11,11 @@
 	height: 150px;
 }
 
-.event-place {
+.event-city {
 	float: right;
 	color: #CCC;
+	padding-right: 10px;
+	font-size: 24px;
 }
 
 #topic-list.event-list {
@@ -82,6 +84,6 @@
 }
 
 .events #list-area {
-	width: 633px;
+	width: 640px;
 	float: left;
 }

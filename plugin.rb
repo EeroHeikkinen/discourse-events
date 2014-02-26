@@ -16,8 +16,24 @@ register_asset "stylesheets/events.css"
 
 gem "google_calendar", "0.3.1"
 
+load File.expand_path("../event.rb", __FILE__)
+
+EventPlugin = EventPlugin
+
 after_initialize do
-  module Events
+  Discourse::Application.routes.prepend do
+    # AJAX json method on server
+    get "category/:category/l/events" => "events#events"
+    # events page on client
+    get 'events' => 'list#category_latest', defaults: { category: SiteSetting.events_category }
+  end
+
+  module EventPlugin
+    class Engine < ::Rails::Engine
+      engine_name "event_plugin"
+      isolate_namespace EventPlugin
+    end
+
     class ::EventsController < ::ApplicationController
 
       def events
@@ -27,107 +43,142 @@ after_initialize do
           " AND topics.title not like 'Category definition%'")
           .order("meta_data->'event_time' ASC")
         list = TopicList.new(:latest, current_user, t)   
-        render_serialized(list, EventListSerializer)
+        render_serialized(list, TopicListSerializer)
       end
-    end
-
-    class ::EventListItemSerializer < ::TopicListItemSerializer
-      attributes :event_time,
-                 :event_place,
-                 :calendar_event_id
-
-      def event_time
-        if object.meta_data and object.meta_data["event_time"]
-          return object.meta_data["event_time"]
-        end
-      end
-
-      def event_place
-        if object.meta_data and object.meta_data["event_place"]
-          return object.meta_data["event_place"]
-        end
-      end
-
-      def calendar_event_id
-        if object.meta_data and object.meta_data["include_calendar_event_id"]
-          object.meta_data["calendar_event_id"]
-        end
-      end
-
-      def include_excerpt?
-        true
-      end
-    end
-
-    class ::EventListSerializer < ::TopicListSerializer
-      self.root = "topic_list"
-      has_many :topics, serializer: EventListItemSerializer, embed: :objects
     end
   end
 
-  class ::Topic
+  class ::Post
     before_save :sync_event_metadata
 
     # see: https://github.com/rails/rails/issues/12497
     def add_meta_data(key,value)
-      self.meta_data = (self.meta_data || {}).merge(key => value)
+      topic = self.topic
+      topic.update_attribute('meta_data', (topic.meta_data || {}).merge(key => value))
     end
 
     def sync_event_metadata
-      # Read Date, Time, Place and event name from title
-      pieces = /\d{1,2}.\d{1,2}(.\d{4})? (\d{2}:\d{2})? ?(.+:) ?(.+)/.match(self.title)
+      event = EventPlugin::Event.new(self)
 
-      if(!pieces)
-        Rails.logger.info "Couldn't parse #{self.title}"
-        return nil 
+      return unless event.is_event?
+
+      properties = event.options
+      if properties["date"]
+        properties["date"] = Time.strptime(properties["date"], "%d.%m.%Y")
+
+        if(SiteSetting.googlecalendar_enabled)
+          if(properties["time"])
+            start_time, end_time = properties["time"].split("-").collect(&:strip)
+
+            if(start_time)
+              hours, minutes = start_time.split(":").collect(&:to_i)
+              start_time = properties["date"] + hours.hours + minutes.minutes
+            else
+              start_time = properties["date"]
+            end
+
+            if(end_time)
+              hours, minutes = end_time.split(":").collect(&:to_i)
+            end
+
+            if end_time and hours and minutes
+              end_time = properties["date"] + hours.hours + minutes.minutes
+            else
+              end_time = start_time
+            end
+
+            sync_google_calendar(topic.title, start_time, end_time)
+          else
+            sync_google_calendar(topic.title, properties["date"], properties["date"]+24.hours)
+          end          
+        end
       end
-      Rails.logger.info "Could parse #{self.title}"
 
-      date = pieces[0]
-      hours = pieces[2]
-      if(hours)
-        time = Time.strptime("#{date} #{hours}", "%d.%m.%Y %R")
-      else
-        time = Time.strptime("#{date}", "%d.%m.%Y")
-      end
+      properties.each{|key, value| add_meta_data("event_" + key, value)}
 
-      return nil unless time
-
-      place = pieces[3][0...-1]
-      self.title = pieces[4]
-
-      if(SiteSetting.googlecalendar_enabled)
-        sync_google_calendar(title, time)
-      end
-
-      add_meta_data("event_time", time)
-      if(place)
-        add_meta_data("event_place", place)
-      end
     end
 
-    def sync_google_calendar(title, time)
+    def sync_google_calendar(title, start_time, end_time)
       cal = Google::Calendar.new(:username => SiteSetting.googlecalendar_username,
                            :password => SiteSetting.googlecalendar_password,
                            :app_name => 'Yhteinen-googlecalendar-integration')
-      return nil unless cal
+      return nil unless title and start_time and end_time
       
-      if meta_data && meta_data["calendar_event_id"]
-        calendar_event_id = meta_data["calendar_event_id"]
+      if topic.meta_data && topic.meta_data["calendar_event_id"]
+        calendar_event_id = topic.meta_data["calendar_event_id"]
       end
 
       event = cal.find_or_create_event_by_id(calendar_event_id) do |e|
-        e.title = self.title
-        e.start_time = time
-        e.end_time = time
+        e.title = self.topic.title
+        e.start_time = start_time
+        e.end_time = end_time 
       end
+
+      Rails.logger.info("Updated event #{event}")
 
       add_meta_data("calendar_event_id", event.id)
     end
   end
 
-  Discourse::Application.routes.prepend do
-    get "category/:category/l/events" => "events#events"
-    get 'events' => 'list#category_latest', defaults: { category: SiteSetting.events_category }
-  end
+  TopicListItemSerializer.class_eval do
+      attributes :event_time,
+                 :event_date,
+                 :event_city,
+                 :event_place,
+                 :event_excerpt,
+                 :calendar_event_id
+
+      def metadata_exists(key)
+        object.meta_data and object.meta_data[key]
+      end
+
+      def event_date
+        object.meta_data["event_date"]
+      end
+
+      def include_event_date?
+        metadata_exists("event_date")
+      end
+
+      def event_time
+        object.meta_data["event_time"]
+      end
+
+      def include_event_time?
+        metadata_exists("event_time")
+      end
+
+      def event_city
+        object.meta_data["event_city"]
+      end
+
+      def include_event_city?
+        metadata_exists("event_city")
+      end
+
+      def event_place
+        object.meta_data["event_place"]
+      end
+
+      def include_event_place?
+        metadata_exists("event_place")
+      end
+
+      def calendar_event_id
+        object.meta_data["calendar_event_id"]
+      end
+
+      def include_calendar_event_id?
+        metadata_exists("calendar_event_id")
+      end
+
+      def include_event_excerpt?
+        EventPlugin::Event.new(object.posts.by_post_number.first).is_event?
+      end
+
+      def event_excerpt
+        # strip images
+        object.posts.by_post_number.first.try(:excerpt, 220, strip_links: true).gsub("[image]", "") || nil
+      end
+    end
 end

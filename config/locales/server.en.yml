@@ -5,3 +5,10 @@ en:
     googlecalendar_password: "Google Calendar Password"
     googlecalendar_enabled: "Enable Google Calendar syncing"
     events_category: "Category to read from for events listing"
+  events:
+    prefix: 
+      topic: "Event:"
+      date: "Date:"
+      time: "Time:"
+      city: "City:"
+      place: "Place:"
