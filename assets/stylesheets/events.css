@@ -14,8 +14,11 @@
 .event-city {
 	float: right;
 	color: #CCC;
-	padding-right: 10px;
-	font-size: 24px;
+	padding-right: 15px;
+	padding-top: 4px;
+	vertical-align: middle;
+	font-size: 16px;
+	font-weight: 100;
 }
 
 #topic-list.event-list {
@@ -86,4 +89,40 @@
 .events #list-area {
 	width: 640px;
 	float: left;
+}
+
+
+#topic-list.event-list h2 {
+    margin: 0;
+    color: #eee;
+    font-family: Roboto !important;
+    font-weight: 100;
+}
+
+.event-list-item {
+    padding: 0 !important;
+    border: 0 !important;
+}
+
+#topic-list.event-list .title {
+	font-family: Roboto;
+	font-weight: 300 !important;
+	font-size: 24px;
+	color: #FF7A00 !important;
+}
+
+.event-info {
+    padding-top: 5px;  
+}
+
+#topic-list.event-list td, #topic-list.event-list th {
+    border-bottom: 1px solid #000 !important;
+    border-top: 1px solid #444 !important;
+}
+
+.event-info .topic-excerpt {
+	margin-top: 4px !important;
+	color: #EEEEEE !important;
+	text-align: justify;
+	padding-right: 15px !important;
 }
