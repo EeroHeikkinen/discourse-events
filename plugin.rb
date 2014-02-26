@@ -178,7 +178,8 @@ after_initialize do
 
       def event_excerpt
         # strip images
-        object.posts.by_post_number.first.try(:excerpt, 220, {strip_links: true, markdown_images:false}).gsub("[image]", "") || nil
+        object.posts.by_post_number.first.try(:excerpt, 220, {strip_links: true, markdown_images:false})
+        .gsub(/\[image\].*KB\n/m,"") || nil
       end
     end
 end
