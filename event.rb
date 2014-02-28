@@ -30,7 +30,7 @@ module ::EventPlugin
       end
 
       # All topics in events category are events
-      if topic and topic.category.slug == SiteSetting.events_category
+      if topic.category and topic.category.slug == SiteSetting.events_category
         return true
       end
 
